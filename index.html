@@ -925,14 +925,14 @@ function renderMonteMap() {
 
   let s = "";
 
-  // Cabecera columnas — A a la derecha (ci=0→x mayor), X a la izquierda (ci=24→x menor)
+  // Cabecera columnas — X a la izquierda (ci=24→x menor), A a la derecha (ci=0→x mayor)
   M_COLS.forEach((c, ci) => {
     const x = (M_ROW_W + (24 - ci) * M_STEP + M_CS / 2).toFixed(1);
     const isEnd = ci===0||ci===24;
     s += `<text x="${x}" y="${M_COL_H-5}" text-anchor="middle" fill="${isEnd?"#8b949e":"#484f58"}" font-size="${isEnd?"7":"5.5"}" font-weight="${isEnd?"700":"400"}" font-family="system-ui">${c}</text>`;
   });
-  s += `<text x="${(M_ROW_W+24*M_STEP+M_CS).toFixed(1)}" y="${M_COL_H-14}" text-anchor="middle" fill="var(--green)" font-size="5" font-family="system-ui">A ►</text>`;
   s += `<text x="${M_ROW_W}" y="${M_COL_H-14}" text-anchor="middle" fill="#8b949e" font-size="5" font-family="system-ui">◄ X</text>`;
+  s += `<text x="${(M_ROW_W+24*M_STEP+M_CS).toFixed(1)}" y="${M_COL_H-14}" text-anchor="middle" fill="var(--green)" font-size="5" font-family="system-ui">A ►</text>`;
 
   // Camino
   const roadY1  = (M_COL_H+86*M_STEP+5).toFixed(1);
@@ -960,7 +960,7 @@ function renderMonteMap() {
       for (let ci=cFrom; ci<=cTo; ci++) {
         const col = M_COLS[ci];
         const id  = `${col}-${fila}`;
-        const x   = (M_ROW_W+(24-ci)*M_STEP).toFixed(1);
+        const x   = (M_ROW_W + (24 - ci) * M_STEP).toFixed(1);
         const yf  = y.toFixed(1);
 
         if (M_GAS.has(id)) {
