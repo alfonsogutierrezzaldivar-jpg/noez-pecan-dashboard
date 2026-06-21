@@ -195,6 +195,10 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       Alertas
     </button>
+    <button class="nav-item" onclick="goTab('productos',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Productos
+    </button>
   </nav>
 
   <div class="sb-footer">
@@ -347,6 +351,25 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
     <div id="monte-tooltip"></div>
   </div>
 
+  <!-- TAB: PRODUCTOS -->
+  <div id="tab-productos" class="tab-panel">
+    <div class="page-header"><h1>Productos</h1><p>Stock actual y alertas de reposición</p></div>
+    <div id="prod-alertas-wrap" style="display:none;margin-bottom:16px">
+      <div class="card" style="border-color:var(--red)">
+        <div class="card-title" style="color:var(--red)">Stock bajo — requiere reposición</div>
+        <div id="prod-alertas-list"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Stock actual</div>
+      <div class="tbl-wrap" id="prod-tabla"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Últimos movimientos</div>
+      <div class="tbl-wrap" id="prod-movimientos"></div>
+    </div>
+  </div>
+
   <!-- TAB: ALERTAS -->
   <div id="tab-alertas" class="tab-panel">
     <div class="page-header"><h1>Alertas</h1><p>Mensajes no procesados y registros sin clasificar</p></div>
@@ -454,6 +477,7 @@ async function loadTab(tab){
     if(tab==="maquinaria")  await loadMaquinaria();
     if(tab==="monte")       await loadMonte();
     if(tab==="alertas")     await loadAlertas();
+    if(tab==="productos")   await loadProductos();
   } catch(e){ console.error(e); }
   document.getElementById("last-upd").textContent = "Actualizado: "+fmtDT(new Date().toISOString());
   setRefreshing(false);
@@ -1232,6 +1256,75 @@ function tablaRegistros(rows){
     </tr>`;
   }).join("");
   return `<table>${head}<tbody>${body}</tbody></table>`;
+}
+
+// ============================================================
+// PRODUCTOS
+// ============================================================
+async function loadProductos(){
+  const [productos, movimientos, alertas] = await Promise.all([
+    sb("productos",{select:"id,nombre,categoria,stock_actual,stock_minimo,unidad",order:"categoria.asc,nombre.asc"}).catch(()=>[]),
+    sb("stock_movimientos",{select:"id,tipo,cantidad,motivo,created_at,producto_id",order:"created_at.desc",limit:"30"}).catch(()=>[]),
+    sb("stock_alertas",{select:"producto_nombre,stock_actual,stock_minimo,created_at",resuelta:"eq.false",order:"created_at.desc"}).catch(()=>[]),
+  ]);
+
+  // Alertas de stock bajo
+  const alertaWrap = document.getElementById("prod-alertas-wrap");
+  if(alertas.length){
+    alertaWrap.style.display = "";
+    document.getElementById("prod-alertas-list").innerHTML = alertas.map(a=>
+      `<div class="alert-item">
+        <div class="alert-tipo" style="color:var(--red)">${esc(a.producto_nombre)}</div>
+        <div class="alert-id">Stock: <b>${a.stock_actual}</b> / Mín: ${a.stock_minimo}</div>
+        <div class="alert-time">${ago(a.created_at)}</div>
+      </div>`
+    ).join("");
+  } else {
+    alertaWrap.style.display = "none";
+  }
+
+  // Tabla de stock
+  const catColors = {fertilizante:"var(--green)",fungicida:"var(--blue)",herbicida:"var(--yellow)",insecticida:"var(--purple)",combustible:"var(--orange)",otro:"var(--text2)"};
+  const thead = `<thead><tr><th>Producto</th><th>Categoría</th><th>Stock actual</th><th>Stock mínimo</th><th>Unidad</th><th>Estado</th></tr></thead>`;
+  const tbody = productos.map(p=>{
+    const bajo = Number(p.stock_actual) <= Number(p.stock_minimo);
+    const estado = bajo
+      ? `<span style="color:var(--red);font-weight:600">Bajo</span>`
+      : `<span style="color:var(--green)">OK</span>`;
+    const catColor = catColors[p.categoria] ?? "var(--text2)";
+    return `<tr>
+      <td style="font-weight:600">${esc(p.nombre)}</td>
+      <td><span style="color:${catColor}">${esc(p.categoria)}</span></td>
+      <td style="font-size:16px;font-weight:700;color:${bajo?"var(--red)":"var(--text)"}">${p.stock_actual}</td>
+      <td>${p.stock_minimo}</td>
+      <td>${esc(p.unidad)}</td>
+      <td>${estado}</td>
+    </tr>`;
+  }).join("");
+  document.getElementById("prod-tabla").innerHTML = productos.length
+    ? `<table>${thead}<tbody>${tbody}</tbody></table>`
+    : emptyState("Sin productos. Ejecutá la migración 003_productos.sql en Supabase.");
+
+  // Mapa id→nombre para movimientos
+  const nomProd = Object.fromEntries(productos.map(p=>[p.id, p.nombre]));
+
+  // Últimos movimientos
+  const mvHead = `<thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Motivo</th></tr></thead>`;
+  const mvBody = movimientos.map(m=>{
+    const esEntrada = m.tipo === "entrada";
+    const color = esEntrada ? "var(--green)" : "var(--red)";
+    const signo = esEntrada ? "+" : "−";
+    return `<tr>
+      <td>${fmtDT(m.created_at)}</td>
+      <td>${esc(nomProd[m.producto_id]??m.producto_id)}</td>
+      <td><span style="color:${color}">${esc(m.tipo)}</span></td>
+      <td style="color:${color};font-weight:600">${signo}${m.cantidad}</td>
+      <td>${esc(m.motivo??"—")}</td>
+    </tr>`;
+  }).join("");
+  document.getElementById("prod-movimientos").innerHTML = movimientos.length
+    ? `<table>${mvHead}<tbody>${mvBody}</tbody></table>`
+    : emptyState("Sin movimientos registrados");
 }
 
 // ============================================================
