@@ -54,8 +54,9 @@ nav{flex:1;padding:10px 8px;overflow-y:auto}
 .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);margin-bottom:14px}
 
 /* KPI GRID */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:1300px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
 .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
 .kpi.g::after{background:var(--green)}.kpi.b::after{background:var(--blue)}
@@ -119,13 +120,18 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
 .tree-cell:hover{opacity:.65}
 #monte-map-area{overflow:auto;background:#0a0c10;border:1px solid var(--border);border-radius:var(--radius);padding:16px}
 #monte-tooltip{position:fixed;background:#1c2128;border:1px solid var(--border2);border-radius:var(--radius);padding:9px 13px;font-size:12px;color:var(--text);pointer-events:none;z-index:999;display:none;max-width:240px;line-height:1.7;box-shadow:0 4px 16px rgba(0,0,0,.4)}
-#tree-panel{width:260px;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);display:none;overflow:hidden}
+#tree-panel{width:320px;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);display:none;overflow:hidden}
 #tree-panel-body{padding:12px 16px;overflow-y:auto;max-height:calc(75vh - 52px)}
 .tree-evt{padding:10px 0;border-bottom:1px solid var(--border)}
 .tree-evt:last-child{border-bottom:none}
 
 /* CLIMATE GRID */
 .climate-kpi{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+
+/* LAYER BUTTONS */
+.layer-btn{background:var(--card2);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius);padding:5px 11px;font-size:11px;font-weight:500;cursor:pointer;transition:background .15s,color .15s,border-color .15s;white-space:nowrap}
+.layer-btn:hover{border-color:var(--green);color:var(--text)}
+.layer-btn.active{background:var(--green-dim);color:var(--green);border-color:var(--green)}
 
 /* MOBILE SIDEBAR TOGGLE */
 #sb-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--sidebar);border:1px solid var(--border);border-radius:var(--radius);width:36px;height:36px;align-items:center;justify-content:center;cursor:pointer;color:var(--text)}
@@ -207,6 +213,7 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
       <div class="kpi g"><div class="kpi-label">Actividad más frecuente</div><div class="kpi-val" id="k-act" style="font-size:16px;padding-top:6px">—</div><div class="kpi-sub" id="k-act-sub"></div></div>
       <div class="kpi y"><div class="kpi-label">Último registro</div><div class="kpi-val" id="k-last" style="font-size:18px;padding-top:4px">—</div><div class="kpi-sub" id="k-last-sub"></div></div>
       <div class="kpi r"><div class="kpi-label">Sin clasificar</div><div class="kpi-val" id="k-nc">—</div><div class="kpi-sub">pendientes de revisión</div></div>
+      <div class="kpi g"><div class="kpi-label">Kg cosechados</div><div class="kpi-val" id="k-kg">—</div><div class="kpi-sub">temporada 2026</div></div>
     </div>
     <div class="two-col">
       <div class="card">
@@ -218,9 +225,13 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
         <div id="alerts-r"><div class="sk" style="height:180px"></div></div>
       </div>
     </div>
-    <div class="card">
+    <div class="card" style="margin-bottom:14px">
       <div class="card-title">Últimos 10 registros</div>
       <div class="tbl-wrap" id="tbl-r"><div class="sk" style="height:120px"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Clima — últimos 60 días</div>
+      <div id="chart-climo"><div class="sk" style="height:300px"></div></div>
     </div>
   </div>
 
@@ -261,6 +272,15 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
       </select>
     </div>
     <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Este mes — días laborales vs lluvia</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div class="kpi g" style="padding:12px 14px"><div class="kpi-label">Días trabajados</div><div class="kpi-val" id="k-trab-mes">—</div></div>
+        <div class="kpi b" style="padding:12px 14px"><div class="kpi-label">Días de lluvia</div><div class="kpi-val" id="k-lluv-mes">—</div></div>
+        <div class="kpi" style="padding:12px 14px"><div class="kpi-label">Sin registro</div><div class="kpi-val" id="k-sinreg-mes" style="color:var(--text3)">—</div></div>
+      </div>
+      <div id="chart-semanas"><div class="sk" style="height:80px"></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
       <div class="card-title" id="title-temp">Temperatura máx/mín — últimos 30 días</div>
       <div id="chart-temp"><div class="sk" style="height:140px"></div></div>
     </div>
@@ -285,6 +305,8 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
       <h1>Monte</h1>
       <p>Mapa árbol por árbol · <span id="monte-status" style="color:var(--text3)">Cargando…</span></p>
     </div>
+    <!-- Layer selector -->
+    <div id="monte-layers" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
     <!-- Zoom controls -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <button class="zoom-btn" onclick="monteZoom(-1)" title="Alejar">−</button>
@@ -428,14 +450,16 @@ async function loadTab(tab){
 // RESUMEN
 // ============================================================
 async function loadResumen(){
-  const [semana, todos, ultimos, sinClas, log30] = await Promise.all([
+  const temporadaDesde = `${new Date().getFullYear()}-04-01`;
+  const [semana, todos, ultimos, sinClas, log30, kgRows, climo60] = await Promise.all([
     sb("registros_trabajo",{select:"id,actividad",created_at:`gte.${isoDesde(7)}`,limit:"1000"}),
     sb("registros_trabajo",{select:"created_at",order:"created_at.desc",limit:"1"}),
     sb("registros_trabajo",{select:"created_at,actividad,confianza,campos",order:"created_at.desc",limit:"10"}),
     sb("registros_trabajo",{select:"id",clasificado:"eq.false",limit:"500"}),
     sb("registros_trabajo",{select:"actividad",created_at:`gte.${isoDesde(30)}`,limit:"2000"}),
-    sb("message_log",{select:"whatsapp_message_id,tipo_mensaje,timestamp,created_at",order:"created_at.desc",limit:"5"}).then(r=>r).catch(()=>[]),
-  ]).catch(e=>{throw e});
+    sb("eventos_arbol",{select:"kg_nuez_cosechada",fecha:`gte.${temporadaDesde}`,kg_nuez_cosechada:"not.is.null",limit:"50000"}).catch(()=>[]),
+    sb("registros_trabajo",{select:"created_at,campos",created_at:`gte.${isoDesde(60)}`,limit:"5000"}).catch(()=>[]),
+  ]);
 
   // Parallel load of alerts separately
   const alerts = await sb("message_log",{select:"whatsapp_message_id,tipo_mensaje,timestamp,created_at",order:"created_at.desc",limit:"5"}).catch(()=>[]);
@@ -456,6 +480,10 @@ async function loadResumen(){
   const kNc=document.getElementById("k-nc");
   kNc.textContent="0"; animCount(kNc, sinClas.length);
 
+  // KPI kg cosechados
+  const totalKg = kgRows.reduce((s,r)=>s+(r.kg_nuez_cosechada??0),0);
+  document.getElementById("k-kg").textContent = totalKg>0 ? totalKg.toFixed(1)+" kg" : "—";
+
   // Gráfico actividades
   const cnt30={};
   log30.forEach(r=>{ const a=r.actividad??"sin_clasificar"; cnt30[a]=(cnt30[a]??0)+1; });
@@ -470,6 +498,9 @@ async function loadResumen(){
   document.getElementById("tbl-r").innerHTML = ultimos.length
     ? tablaRegistros(ultimos)
     : emptyState("Sin registros");
+
+  // Climograma
+  document.getElementById("chart-climo").innerHTML = climograma(climo60);
 }
 
 // ============================================================
@@ -544,11 +575,13 @@ async function renderClima(dias){
   document.getElementById("chart-temp").innerHTML  = '<div class="sk" style="height:140px"></div>';
   document.getElementById("chart-lluvia").innerHTML = '<div class="sk" style="height:100px"></div>';
 
-  const rows = await sb("registros_trabajo",{
-    select:"created_at,campos",
-    created_at:`gte.${isoDesde(d)}`,
-    limit:"2000"
-  });
+  // Fetch periodo seleccionado + mes actual en paralelo
+  const hoyD = new Date();
+  const mesDesde = `${hoyD.getFullYear()}-${String(hoyD.getMonth()+1).padStart(2,"0")}-01`;
+  const [rows, rowsMes] = await Promise.all([
+    sb("registros_trabajo",{select:"created_at,campos",created_at:`gte.${isoDesde(d)}`,limit:"2000"}),
+    sb("registros_trabajo",{select:"created_at,campos",created_at:`gte.${mesDesde}`,limit:"2000"}),
+  ]);
 
   const tempData={}, lluviaData={};
   let ultimaLluvia=null;
@@ -580,6 +613,30 @@ async function renderClima(dias){
     secos=Math.floor((hoy-lluv)/86400000);
   }
   document.getElementById("k-seco").textContent = ultimaLluvia ? secos : "—";
+
+  // ── Días laborales vs lluvia (mes actual) ──
+  const workedSet = new Set(), rainySet = new Set();
+  rowsMes.forEach(r => {
+    const day = r.created_at?.slice(0,10);
+    const c   = r.campos ?? {};
+    if (!day) return;
+    workedSet.add(day);
+    if ((c.mm_lluvia ?? 0) > 0) rainySet.add(day);
+  });
+  const daysInMonth = new Date(hoyD.getFullYear(), hoyD.getMonth()+1, 0).getDate();
+  const passedDays  = hoyD.getDate();
+  const noregDays   = [...Array(passedDays)].map((_,i)=>{
+    const iso = `${hoyD.getFullYear()}-${String(hoyD.getMonth()+1).padStart(2,"0")}-${String(i+1).padStart(2,"0")}`;
+    return workedSet.has(iso)||rainySet.has(iso) ? 0 : 1;
+  }).reduce((a,b)=>a+b,0);
+  const elTM = document.getElementById("k-trab-mes");
+  const elLM = document.getElementById("k-lluv-mes");
+  const elSM = document.getElementById("k-sinreg-mes");
+  if (elTM) elTM.textContent = workedSet.size;
+  if (elLM) elLM.textContent = rainySet.size;
+  if (elSM) elSM.textContent = noregDays;
+  const elSW = document.getElementById("chart-semanas");
+  if (elSW) elSW.innerHTML = stackedWeekChart(workedSet, rainySet, hoyD.getFullYear(), hoyD.getMonth()+1);
 
   // Gráfico temperatura
   const tempDias=Object.keys(tempData).sort();
@@ -668,7 +725,27 @@ const M_ACT_STROKE = {
 };
 
 let _mZoom = 2;
-let _mLastEvt = new Map();
+let _mLastEvt   = new Map();
+let _mAct30     = new Map(); // arbol_id → actividad (last 30 days)
+let _mKg        = new Map(); // arbol_id → total kg cosechados
+let _mKgMax     = 1;
+let _mCurrentLayer = "variedad";
+
+const MONTE_LAYERS = [
+  {id:"variedad",       label:"Variedad"},
+  {id:"poda",           label:"Poda"},
+  {id:"fumigacion_zinc",label:"Fumig. Zinc"},
+  {id:"fumigacion_cobre",label:"Fumig. Cobre"},
+  {id:"fumigacion_glifosato",label:"Glifosato"},
+  {id:"juntar_nueces",  label:"Juntar Nueces"},
+  {id:"fumigar_paraquat",label:"Paraquat"},
+  {id:"tirar_fipronil", label:"Fipronil"},
+  {id:"cortar_pasto_largo",label:"Pasto Largo"},
+  {id:"cortar_pasto_ancho",label:"Pasto Ancho"},
+  {id:"tirar_urea",     label:"Urea"},
+  {id:"sin_actividad",  label:"Sin actividad (30d)"},
+  {id:"produccion",     label:"Producción (kg)"},
+];
 
 // Rangos de columnas [desde, hasta] (índices en M_COLS) por fila
 // VERIFICAR: filas 62-75 del lote viejo — ajustar según el mapa real del Excel
@@ -716,51 +793,158 @@ function monteZoom(dir) {
 }
 
 async function loadMonte() {
-  // Fetch último evento por árbol desde eventos_arbol
+  // Fetch todos los eventos — incluye kg y fecha para capas
   const events = await sb("eventos_arbol", {
-    select: "arbol_id,actividad,fecha,trabajador,observaciones",
+    select: "arbol_id,actividad,fecha,trabajador,observaciones,kg_nuez_cosechada",
     order:  "fecha.desc",
     limit:  "10000",
   }).catch(() => []);
 
+  const cutoff30 = isoDesde(30).slice(0,10);
   _mLastEvt = new Map();
-  events.forEach(e => { if (!_mLastEvt.has(e.arbol_id)) _mLastEvt.set(e.arbol_id, e); });
+  _mAct30   = new Map();
+  _mKg      = new Map();
 
-  // Filas de cada lote
-  // Lote Nuevo: 186 arriba → 101 abajo (pegado al camino)
-  const NUEVO = [...Array(86)].map((_,i) => 186 - i); // 186, 185, ..., 101
-  // Lote Viejo: 1 arriba (pegado al camino) → 75 abajo — VERIFICAR orientación
-  const VIEJO = [...Array(75)].map((_,i) => i + 1);   // 1-75
+  events.forEach(e => {
+    if (!_mLastEvt.has(e.arbol_id)) _mLastEvt.set(e.arbol_id, e);
+    if (e.fecha >= cutoff30 && !_mAct30.has(e.arbol_id)) _mAct30.set(e.arbol_id, e.actividad);
+    if (e.kg_nuez_cosechada) _mKg.set(e.arbol_id, (_mKg.get(e.arbol_id)??0) + e.kg_nuez_cosechada);
+  });
+  _mKgMax = Math.max(...[..._mKg.values()], 1);
+
+  // Construir selector de capas (solo la primera vez)
+  const layersEl = document.getElementById("monte-layers");
+  if (!layersEl.children.length) {
+    layersEl.innerHTML = MONTE_LAYERS.map(l =>
+      `<button class="layer-btn${l.id===_mCurrentLayer?" active":""}" data-layer="${l.id}" onclick="setMonteLayer('${l.id}')">${l.label}</button>`
+    ).join("");
+  }
+
+  // Render mapa + adjuntar listeners (solo la primera vez)
+  renderMonteMap();
+
+  const mapArea = document.getElementById("monte-map-area");
+  if (!mapArea._eventsAttached) {
+    mapArea._eventsAttached = true;
+    const tooltip = document.getElementById("monte-tooltip");
+
+    mapArea.addEventListener("mousemove", e => {
+      const el = e.target;
+      if (!el.dataset.id) { tooltip.style.display="none"; return; }
+      const id = el.dataset.id, type = el.dataset.type;
+      if (type==="gas") {
+        tooltip.innerHTML = `<b>${id}</b><br><span style="color:var(--text3)">Celda GAS — sin árbol</span>`;
+      } else if (type==="monte") {
+        tooltip.innerHTML = `<b>${id}</b><br><span style="color:var(--blue)">MONTE</span>`;
+      } else {
+        const vr = el.dataset.vr??"—";
+        const evt = _mLastEvt.get(id);
+        const act = evt ? evt.actividad.replace(/_/g," ") : "Sin actividad registrada";
+        const fecha = evt?.fecha??"";
+        const trab  = evt?.trabajador??"";
+        const kg    = _mKg.get(id);
+        tooltip.innerHTML = `<b>${id}</b> · <span style="color:${M_VAR_FILL[vr]??'#8b949e'}">${vr}</span>`
+          + `<br>Últ. actividad: <b>${act}</b>`
+          + (fecha ? `<br>Fecha: ${fecha}` : "")
+          + (trab  ? `<br>Trabajador: ${trab}` : "")
+          + (kg    ? `<br>Kg cosechados: ${kg.toFixed(1)} kg` : "");
+      }
+      tooltip.style.display="block";
+      tooltip.style.left=(e.clientX+14)+"px";
+      tooltip.style.top=(e.clientY-12)+"px";
+    });
+    mapArea.addEventListener("mouseleave", () => { document.getElementById("monte-tooltip").style.display="none"; });
+    mapArea.addEventListener("click", e => {
+      const el = e.target;
+      if (!el.classList.contains("tree-cell")) return;
+      openTreePanel(el.dataset.id, el.dataset.vr);
+    });
+  }
+
+  document.getElementById("monte-status").textContent =
+    `${_mLastEvt.size} árbol${_mLastEvt.size!==1?"es":""} con datos registrados`;
+}
+
+function setMonteLayer(layerId) {
+  _mCurrentLayer = layerId;
+  document.querySelectorAll(".layer-btn").forEach(b => b.classList.toggle("active", b.dataset.layer===layerId));
+  renderMonteMap();
+}
+
+function getLayerStyle(id, col) {
+  const DARK = "#1c2128";
+  const l = _mCurrentLayer;
+
+  if (l === "variedad") {
+    const vr  = mVariedad(col);
+    const evt = _mLastEvt.get(id);
+    const stroke = evt ? (M_ACT_STROKE[evt.actividad] ?? "#ffffff") : "none";
+    return { fill: M_VAR_FILL[vr], stroke, sw: evt?"0.9":"0", vr };
+  }
+
+  if (l === "sin_actividad") {
+    const has = _mAct30.has(id);
+    return { fill: has?"#1a3d0a":"#5a1a1a", stroke: has?"none":"#f85149", sw: has?"0":"0.7", vr: mVariedad(col) };
+  }
+
+  if (l === "produccion" || l === "juntar_nueces") {
+    const kg = _mKg.get(id)??0;
+    if (!kg) return { fill: DARK, stroke:"none", sw:"0", vr: mVariedad(col) };
+    const t = Math.min(kg/_mKgMax, 1);
+    // dark green → gold
+    const r = Math.round(20  + t*210);
+    const g = Math.round(60  + t*145);
+    const b = Math.round(10  + t*0);
+    return { fill:`rgb(${r},${g},${b})`, stroke: t>0.5?"#ffd700":"none", sw: t>0.5?"0.5":"0", vr: mVariedad(col) };
+  }
+
+  // Activity layers — last activity in last 30 days matches?
+  const ACT_COLORS = {
+    poda:"#f0e68c", fumigacion_zinc:"#ffa500", fumigacion_cobre:"#cd7f32",
+    fumigacion_glifosato:"#ff6b35", fumigar_paraquat:"#ff4500",
+    tirar_fipronil:"#e040fb", cortar_pasto_largo:"#90ee90",
+    cortar_pasto_ancho:"#4caf50", tirar_urea:"#80deea",
+  };
+  const color = ACT_COLORS[l];
+  if (color) {
+    const act30 = _mAct30.get(id);
+    if (act30 === l) return { fill: color, stroke:"none", sw:"0", vr: mVariedad(col) };
+    return { fill: DARK, stroke:"none", sw:"0", vr: mVariedad(col) };
+  }
+
+  // fallback variedad
+  return { fill: M_VAR_FILL[mVariedad(col)], stroke:"none", sw:"0", vr: mVariedad(col) };
+}
+
+function renderMonteMap() {
+  const NUEVO = [...Array(86)].map((_,i) => 186 - i);
+  const VIEJO = [...Array(75)].map((_,i) => i + 1);
 
   const SVG_W = M_ROW_W + 25 * M_STEP + 2;
   const SVG_H = M_COL_H + 86 * M_STEP + M_SEP_H + 75 * M_STEP + 4;
 
-  let s = ""; // SVG content string
+  let s = "";
 
-  // Cabecera de columnas — A (izquierda) → X (derecha)
-  // ci=0 → columna A en x más pequeño (izquierda); ci=24 → columna X en x mayor (derecha)
+  // Cabecera columnas
   M_COLS.forEach((c, ci) => {
     const x = (M_ROW_W + ci * M_STEP + M_CS / 2).toFixed(1);
-    const isEnd = ci === 0 || ci === 24;
-    const fill  = isEnd ? "#8b949e" : "#484f58";
-    const fsize = isEnd ? "7" : "5.5";
-    s += `<text x="${x}" y="${M_COL_H - 5}" text-anchor="middle" fill="${fill}" font-size="${fsize}" font-weight="${isEnd?"700":"400"}" font-family="system-ui">${c}</text>`;
+    const isEnd = ci===0||ci===24;
+    s += `<text x="${x}" y="${M_COL_H-5}" text-anchor="middle" fill="${isEnd?"#8b949e":"#484f58"}" font-size="${isEnd?"7":"5.5"}" font-weight="${isEnd?"700":"400"}" font-family="system-ui">${c}</text>`;
   });
-  // Marcadores de orientación
-  s += `<text x="${M_ROW_W}" y="${M_COL_H - 14}" text-anchor="middle" fill="var(--green)" font-size="5" font-family="system-ui">◄ A</text>`;
-  s += `<text x="${(M_ROW_W + 24 * M_STEP + M_CS).toFixed(1)}" y="${M_COL_H - 14}" text-anchor="middle" fill="#8b949e" font-size="5" font-family="system-ui">X ►</text>`;
+  s += `<text x="${M_ROW_W}" y="${M_COL_H-14}" text-anchor="middle" fill="var(--green)" font-size="5" font-family="system-ui">◄ A</text>`;
+  s += `<text x="${(M_ROW_W+24*M_STEP+M_CS).toFixed(1)}" y="${M_COL_H-14}" text-anchor="middle" fill="#8b949e" font-size="5" font-family="system-ui">X ►</text>`;
 
-  // Líneas del camino separador
-  const roadY1 = (M_COL_H + 86 * M_STEP + 5).toFixed(1);
-  const roadY2 = (M_COL_H + 86 * M_STEP + M_SEP_H - 5).toFixed(1);
-  const roadMid = (M_COL_H + 86 * M_STEP + M_SEP_H / 2 + 2).toFixed(1);
+  // Camino
+  const roadY1  = (M_COL_H+86*M_STEP+5).toFixed(1);
+  const roadY2  = (M_COL_H+86*M_STEP+M_SEP_H-5).toFixed(1);
+  const roadMid = (M_COL_H+86*M_STEP+M_SEP_H/2+2).toFixed(1);
   s += `<line x1="${M_ROW_W}" y1="${roadY1}" x2="${SVG_W}" y2="${roadY1}" stroke="#21262d" stroke-width="0.5"/>`;
-  s += `<text x="${(M_ROW_W + 25 * M_STEP / 2).toFixed(1)}" y="${roadMid}" text-anchor="middle" fill="#3d444d" font-size="4.5" font-family="system-ui">▬▬ Camino ▬▬</text>`;
+  s += `<text x="${(M_ROW_W+25*M_STEP/2).toFixed(1)}" y="${roadMid}" text-anchor="middle" fill="#3d444d" font-size="4.5" font-family="system-ui">▬▬ Camino ▬▬</text>`;
   s += `<line x1="${M_ROW_W}" y1="${roadY2}" x2="${SVG_W}" y2="${roadY2}" stroke="#21262d" stroke-width="0.5"/>`;
 
-  // Etiqueta de lote (vertical)
-  const nLabelY = (M_COL_H + 43 * M_STEP).toFixed(1);
-  const vLabelY = (M_COL_H + 86 * M_STEP + M_SEP_H + 37 * M_STEP).toFixed(1);
+  // Etiquetas de lote
+  const nLabelY = (M_COL_H+43*M_STEP).toFixed(1);
+  const vLabelY = (M_COL_H+86*M_STEP+M_SEP_H+37*M_STEP).toFixed(1);
   s += `<text x="3" y="${nLabelY}" fill="#3d444d" font-size="4" font-family="system-ui" transform="rotate(-90,3,${nLabelY})">LOTE NUEVO 101-186</text>`;
   s += `<text x="3" y="${vLabelY}" fill="#3d444d" font-size="4" font-family="system-ui" transform="rotate(-90,3,${vLabelY})">LOTE VIEJO 1-75</text>`;
 
@@ -770,16 +954,13 @@ async function loadMonte() {
       const range = mColRange(fila);
       if (!range) return;
       const [cFrom, cTo] = range;
+      if (fila%5===0||fila===rows[0]||fila===rows[rows.length-1])
+        s += `<text x="${M_ROW_W-2}" y="${(y+M_CS-0.5).toFixed(1)}" text-anchor="end" fill="#484f58" font-size="3.5" font-family="system-ui">${fila}</text>`;
 
-      // Etiqueta de fila cada 5 + primeras/últimas
-      if (fila % 5 === 0 || fila === rows[0] || fila === rows[rows.length - 1]) {
-        s += `<text x="${M_ROW_W - 2}" y="${(y + M_CS - 0.5).toFixed(1)}" text-anchor="end" fill="#484f58" font-size="3.5" font-family="system-ui">${fila}</text>`;
-      }
-
-      for (let ci = cFrom; ci <= cTo; ci++) {
+      for (let ci=cFrom; ci<=cTo; ci++) {
         const col = M_COLS[ci];
         const id  = `${col}-${fila}`;
-        const x   = (M_ROW_W + ci * M_STEP).toFixed(1);
+        const x   = (M_ROW_W+ci*M_STEP).toFixed(1);
         const yf  = y.toFixed(1);
 
         if (M_GAS.has(id)) {
@@ -791,146 +972,127 @@ async function loadMonte() {
           continue;
         }
 
-        const vr     = mVariedad(col);
-        const fill   = M_VAR_FILL[vr];
-        const evt    = _mLastEvt.get(id);
-        const stroke = evt ? (M_ACT_STROKE[evt.actividad] ?? "#ffffff") : "none";
-        const sw     = evt ? "0.9" : "0";
-        const dAct   = evt ? ` data-act="${evt.actividad}" data-fecha="${evt.fecha||""}" data-trab="${(evt.trabajador||"").replace(/"/g,"")}"` : "";
-
+        const { fill, stroke, sw, vr } = getLayerStyle(id, col);
+        const evt = _mLastEvt.get(id);
+        const dAct = evt ? ` data-act="${evt.actividad}" data-fecha="${evt.fecha||""}" data-trab="${(evt.trabajador||"").replace(/"/g,"")}"` : "";
         s += `<rect x="${x}" y="${yf}" width="${M_CS}" height="${M_CS}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" rx="0.5" data-id="${id}" data-vr="${vr}"${dAct} class="tree-cell"/>`;
       }
     });
   };
 
   renderRows(NUEVO, M_COL_H);
-  renderRows(VIEJO, M_COL_H + 86 * M_STEP + M_SEP_H);
+  renderRows(VIEJO, M_COL_H + 86*M_STEP + M_SEP_H);
 
   const inner = document.getElementById("monte-map-inner");
   inner.innerHTML = `<svg id="monte-svg" viewBox="0 0 ${SVG_W.toFixed(1)} ${SVG_H.toFixed(1)}" width="${SVG_W.toFixed(1)}" height="${SVG_H.toFixed(1)}" xmlns="http://www.w3.org/2000/svg" style="display:block">${s}</svg>`;
-
-  // Aplicar zoom inicial
   inner.style.transform = `scale(${_mZoom})`;
   inner.style.transformOrigin = "top left";
-  inner.style.width  = (SVG_W * _mZoom) + "px";
-  inner.style.height = (SVG_H * _mZoom) + "px";
+  inner.style.width  = (SVG_W*_mZoom)+"px";
+  inner.style.height = (SVG_H*_mZoom)+"px";
 
-  // ── Tooltip ──
-  const tooltip = document.getElementById("monte-tooltip");
-  const svg = document.getElementById("monte-svg");
-
-  svg.addEventListener("mousemove", e => {
-    const el = e.target;
-    if (!el.dataset.id) { tooltip.style.display = "none"; return; }
-    const id   = el.dataset.id;
-    const type = el.dataset.type;
-    if (type === "gas") {
-      tooltip.innerHTML = `<b>${id}</b><br><span style="color:var(--text3)">Celda GAS — sin árbol</span>`;
-    } else if (type === "monte") {
-      tooltip.innerHTML = `<b>${id}</b><br><span style="color:var(--blue)">MONTE</span>`;
-    } else {
-      const vr   = el.dataset.vr ?? "—";
-      const act  = el.dataset.act  ? el.dataset.act.replace(/_/g," ")  : "Sin actividad registrada";
-      const fecha = el.dataset.fecha || "";
-      const trab  = el.dataset.trab  || "";
-      tooltip.innerHTML = `<b>${id}</b> · <span style="color:${M_VAR_FILL[vr]}">${vr}</span>`
-        + `<br>Última actividad: <b>${act}</b>`
-        + (fecha ? `<br>Fecha: ${fecha}` : "")
-        + (trab  ? `<br>Trabajador: ${trab}` : "");
-    }
-    tooltip.style.display = "block";
-    tooltip.style.left = (e.clientX + 14) + "px";
-    tooltip.style.top  = (e.clientY - 12) + "px";
-  });
-
-  svg.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
-
-  // ── Click → panel de historial ──
-  svg.addEventListener("click", e => {
-    const el = e.target;
-    if (!el.classList.contains("tree-cell")) return;
-    openTreePanel(el.dataset.id, el.dataset.vr);
-  });
-
-  // Status
-  document.getElementById("monte-status").textContent =
-    `${_mLastEvt.size} árbol${_mLastEvt.size !== 1 ? "es" : ""} con datos registrados`;
-
-  // ── Leyenda ──
-  const varLegend = Object.entries(M_VAR_FILL).map(([k,c]) =>
-    `<span style="display:inline-flex;align-items:center;gap:4px">
-      <span style="width:10px;height:10px;background:${c};border-radius:2px;flex-shrink:0"></span>
-      <span>${k.charAt(0).toUpperCase()+k.slice(1)}</span>
-    </span>`).join("");
-
-  const gasLegend = `
-    <span style="display:inline-flex;align-items:center;gap:4px">
-      <span style="width:10px;height:10px;background:#1c2128;border:1px solid #30363d;border-radius:2px;flex-shrink:0"></span><span>GAS</span>
-    </span>
-    <span style="display:inline-flex;align-items:center;gap:4px">
-      <span style="width:10px;height:10px;background:#1f3a5c;border:1px solid #58a6ff;border-radius:2px;flex-shrink:0"></span><span>MONTE</span>
-    </span>`;
-
-  const actLegend = [
-    ["#f0e68c","Poda"],["#ffa500","Fumigaciones"],["#ffd700","Juntar nueces"],
-    ["#90ee90","Cortar pasto"],["#c8c8c8","Otra actividad"],
-  ].map(([c,l]) =>
-    `<span style="display:inline-flex;align-items:center;gap:4px">
-      <span style="width:10px;height:10px;border:1.5px solid ${c};border-radius:2px;flex-shrink:0"></span>
-      <span>${l}</span>
-    </span>`).join("");
-
-  document.getElementById("monte-leyenda").innerHTML = `
-    <div style="font-size:11px;color:var(--text2);display:flex;flex-wrap:wrap;gap:12px;margin-bottom:6px">
-      <span style="font-weight:600;color:var(--text3);align-self:center">Variedades:</span>
-      ${varLegend}${gasLegend}
-    </div>
-    <div style="font-size:11px;color:var(--text2);display:flex;flex-wrap:wrap;gap:12px">
-      <span style="font-weight:600;color:var(--text3);align-self:center">Actividad reciente (borde):</span>
-      ${actLegend}
+  // Leyenda dinámica por capa
+  const l = _mCurrentLayer;
+  let leyHTML = "";
+  if (l==="variedad") {
+    const varL = Object.entries(M_VAR_FILL).map(([k,c])=>
+      `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:${c};border-radius:2px"></span>${k}</span>`).join("");
+    const actL = [["#f0e68c","Poda"],["#ffa500","Fumigaciones"],["#ffd700","Juntar nueces"],["#90ee90","Cortar pasto"],["#ffffff","Otra"]].map(([c,l])=>
+      `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border:1.5px solid ${c};border-radius:2px"></span>${l}</span>`).join("");
+    leyHTML = `<div style="font-size:11px;color:var(--text2);display:flex;flex-wrap:wrap;gap:10px;margin-bottom:5px"><b style="color:var(--text3)">Variedad:</b>${varL}</div>
+      <div style="font-size:11px;color:var(--text2);display:flex;flex-wrap:wrap;gap:10px"><b style="color:var(--text3)">Actividad (borde):</b>${actL}</div>`;
+  } else if (l==="sin_actividad") {
+    leyHTML = `<div style="font-size:11px;color:var(--text2);display:flex;gap:12px">
+      <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#1a3d0a;border-radius:2px"></span>Con actividad (30d)</span>
+      <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#5a1a1a;border:0.7px solid #f85149;border-radius:2px"></span>Sin actividad reciente</span>
     </div>`;
+  } else if (l==="produccion"||l==="juntar_nueces") {
+    leyHTML = `<div style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:10px">
+      <b style="color:var(--text3)">Kg cosechados:</b>
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span style="width:60px;height:10px;border-radius:2px;background:linear-gradient(to right,#1c2128,#56a100,#ffd700)"></span>
+      </span>
+      <span>0 → ${_mKgMax.toFixed(0)} kg</span>
+      <span style="color:var(--text3)">| Gris = sin datos</span>
+    </div>`;
+  } else {
+    const ACT_COLORS={poda:"#f0e68c",fumigacion_zinc:"#ffa500",fumigacion_cobre:"#cd7f32",fumigacion_glifosato:"#ff6b35",fumigar_paraquat:"#ff4500",tirar_fipronil:"#e040fb",cortar_pasto_largo:"#90ee90",cortar_pasto_ancho:"#4caf50",tirar_urea:"#80deea"};
+    const color = ACT_COLORS[l]??"#8b949e";
+    const label = MONTE_LAYERS.find(x=>x.id===l)?.label??l;
+    leyHTML = `<div style="font-size:11px;color:var(--text2);display:flex;gap:12px">
+      <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:${color};border-radius:2px"></span>${label} — realizado en últimos 30 días</span>
+      <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#1c2128;border:1px solid #30363d;border-radius:2px"></span>Sin datos</span>
+    </div>`;
+  }
+  const gasL = `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#1c2128;border:1px solid #30363d;border-radius:2px"></span>GAS</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#1f3a5c;border:1px solid #58a6ff;border-radius:2px"></span>MONTE</span>`;
+  document.getElementById("monte-leyenda").innerHTML = leyHTML
+    + `<div style="font-size:11px;color:var(--text2);display:flex;gap:12px;margin-top:6px">${gasL}</div>`;
 }
 
 async function openTreePanel(arbolId, variedad) {
   const panel = document.getElementById("tree-panel");
   const body  = document.getElementById("tree-panel-body");
+
+  // Determinar lote desde el número de fila en el id (ej. "A-101")
+  const filaNum = parseInt(arbolId.split("-")[1], 10);
+  const lote = filaNum >= 101 ? "Lote Nuevo" : "Lote Viejo";
+  const totalKg = _mKg.get(arbolId) ?? 0;
+
   document.getElementById("tree-panel-title").textContent = arbolId;
   document.getElementById("tree-panel-sub").textContent =
-    variedad ? `Variedad: ${variedad.charAt(0).toUpperCase()+variedad.slice(1)}` : "";
+    [variedad ? `Variedad: ${variedad.charAt(0).toUpperCase()+variedad.slice(1)}` : "", lote].filter(Boolean).join(" · ");
+
   body.innerHTML = `<div class="sk" style="height:80px;margin-top:12px"></div>`;
   panel.style.display = "block";
 
   const hist = await sb("eventos_arbol", {
-    select: "actividad,fecha,trabajador,producto,cantidad,unidad,horas_trabajadas,kg_nuez_cosechada,observaciones",
+    select:   "actividad,fecha,trabajador,producto,cantidad,unidad,horas_trabajadas,kg_nuez_cosechada,observaciones",
     arbol_id: `eq.${arbolId}`,
     order:    "fecha.desc",
-    limit:    "20",
+    limit:    "50",
   }).catch(() => []);
 
+  // Header con kg totales
+  const kgBadge = totalKg > 0
+    ? `<div style="margin:10px 0 8px;padding:8px 10px;background:var(--card2);border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--text3)">Kg cosechados total</span>
+        <span style="font-size:15px;font-weight:700;color:var(--yellow)">${totalKg.toFixed(1)} kg</span>
+       </div>`
+    : "";
+
   if (!hist.length) {
-    body.innerHTML = `<div style="padding:16px 0;font-size:13px;color:var(--text3);text-align:center">Sin eventos registrados.</div>`;
+    body.innerHTML = kgBadge + `<div style="padding:16px 0;font-size:13px;color:var(--text3);text-align:center">Sin eventos registrados.</div>`;
     return;
   }
 
-  body.innerHTML = hist.map(e => {
-    const act    = (e.actividad ?? "—").replace(/_/g," ");
-    const stroke = M_ACT_STROKE[e.actividad] ?? "var(--text3)";
-    const extras = [
-      e.producto         ? `Producto: ${esc(e.producto)}${e.cantidad ? ` · ${e.cantidad} ${e.unidad??""}` : ""}` : null,
-      e.horas_trabajadas ? `Horas: ${e.horas_trabajadas}h`                                                        : null,
-      e.kg_nuez_cosechada? `Nueces: ${e.kg_nuez_cosechada} kg`                                                    : null,
-      e.observaciones    ? esc(e.observaciones)                                                                    : null,
-    ].filter(Boolean).map(t => `<div style="font-size:11px;color:var(--text3)">${t}</div>`).join("");
+  const thead = `<thead><tr>
+    <th style="font-size:10px;padding:6px 8px">Fecha</th>
+    <th style="font-size:10px;padding:6px 8px">Actividad</th>
+    <th style="font-size:10px;padding:6px 8px">Trabajador</th>
+    <th style="font-size:10px;padding:6px 8px">Producto</th>
+    <th style="font-size:10px;padding:6px 8px">Kg</th>
+    <th style="font-size:10px;padding:6px 8px">Obs.</th>
+  </tr></thead>`;
 
-    return `<div class="tree-evt">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
-        <span style="width:8px;height:8px;background:${stroke};border-radius:50%;flex-shrink:0"></span>
-        <span style="font-size:12px;font-weight:600;color:var(--text)">${act}</span>
-      </div>
-      <div style="font-size:11px;color:var(--text2)">${e.fecha??"—"} · ${esc(e.trabajador??"—")}</div>
-      ${extras}
-    </div>`;
+  const tbody = hist.map(e => {
+    const dot = M_ACT_STROKE[e.actividad] ?? "#484f58";
+    const act = (e.actividad??"—").replace(/_/g," ");
+    const prod = e.producto ? esc(e.producto)+(e.cantidad?` ${e.cantidad}${e.unidad??""}` : "") : "—";
+    return `<tr>
+      <td style="font-size:11px;padding:5px 8px;white-space:nowrap">${e.fecha??"—"}</td>
+      <td style="font-size:11px;padding:5px 8px">
+        <span style="display:inline-flex;align-items:center;gap:4px">
+          <span style="width:6px;height:6px;background:${dot};border-radius:50%;flex-shrink:0"></span>${act}
+        </span>
+      </td>
+      <td style="font-size:11px;padding:5px 8px">${esc(e.trabajador??"—")}</td>
+      <td style="font-size:11px;padding:5px 8px;color:var(--text2)">${prod}</td>
+      <td style="font-size:11px;padding:5px 8px;color:var(--yellow)">${e.kg_nuez_cosechada!=null?e.kg_nuez_cosechada+" kg":"—"}</td>
+      <td style="font-size:11px;padding:5px 8px;color:var(--text3);max-width:80px;overflow:hidden;text-overflow:ellipsis" title="${esc(e.observaciones??"")}">${esc(e.observaciones??"—")}</td>
+    </tr>`;
   }).join("");
+
+  body.innerHTML = kgBadge + `<div class="tbl-wrap"><table>${thead}<tbody>${tbody}</tbody></table></div>`;
 }
 
 function closeTreePanel() {
@@ -1073,6 +1235,187 @@ function dualLineChart(dias, maxArr, minArr){
     <text x="${W-4}" y="12" text-anchor="end" fill="var(--text3)" font-size="8" font-family="system-ui">${maxV.toFixed(0)}°</text>
     <text x="${W-4}" y="${H-PAD}" text-anchor="end" fill="var(--text3)" font-size="8" font-family="system-ui">${minV.toFixed(0)}°</text>
   </svg>`;
+}
+
+// ============================================================
+// CHART: climograma (temp + lluvia, 60 días)
+// ============================================================
+function climograma(rows) {
+  // Procesar por día
+  const byDay = {};
+  rows.forEach(r => {
+    const day = r.created_at?.slice(0,10);
+    const c   = r.campos ?? {};
+    if (!day) return;
+    if (!byDay[day]) byDay[day] = { maxT:[], minT:[], lluvia:0 };
+    if (c.temp_maxima != null) byDay[day].maxT.push(+c.temp_maxima);
+    if (c.temp_minima != null) byDay[day].minT.push(+c.temp_minima);
+    if (c.mm_lluvia   != null) byDay[day].lluvia += +c.mm_lluvia;
+  });
+
+  // Generar los 60 días
+  const days = [];
+  const hoy  = new Date();
+  for (let i = 59; i >= 0; i--) {
+    const d = new Date(hoy); d.setDate(d.getDate()-i);
+    days.push(d.toISOString().slice(0,10));
+  }
+
+  const W=760, H=300, PL=38, PR=42, PT=24, PB=36;
+  const iW = W-PL-PR, iH = H-PT-PB;
+
+  // Escala temperatura
+  const allT = days.flatMap(d => byDay[d] ? [...byDay[d].maxT,...byDay[d].minT] : []);
+  const tMin = allT.length ? Math.floor(Math.min(...allT)-2) : 0;
+  const tMax = allT.length ? Math.ceil(Math.max(...allT)+2)  : 40;
+
+  // Escala lluvia (eje derecho)
+  const allR   = days.map(d => byDay[d]?.lluvia ?? 0);
+  const rMax   = Math.max(Math.max(...allR), 10);
+
+  const toX    = i  => PL + (i / (days.length-1)) * iW;
+  const toYt   = t  => PT + (1-(t-tMin)/(tMax-tMin)) * iH;
+  const toYr   = r  => PT + (1-r/rMax) * iH;
+
+  const bW = Math.max(2, iW/days.length - 1);
+  let s = "";
+
+  // Grid lines temp
+  const step = (tMax-tMin) > 30 ? 10 : 5;
+  for (let t = Math.ceil(tMin/step)*step; t <= tMax; t += step) {
+    const y = toYt(t).toFixed(1);
+    s += `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#21262d" stroke-width="0.5"/>`;
+    s += `<text x="${PL-4}" y="${(+y+3).toFixed(1)}" text-anchor="end" fill="#484f58" font-size="9" font-family="system-ui">${t}°</text>`;
+  }
+
+  // Barras de lluvia
+  days.forEach((d,i) => {
+    const r = byDay[d]?.lluvia ?? 0;
+    if (!r) return;
+    const x  = toX(i) - bW/2;
+    const y  = toYr(r);
+    const bh = PT+iH-y;
+    s += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bW.toFixed(1)}" height="${bh.toFixed(1)}" fill="#58a6ff" opacity="0.45" rx="1"/>`;
+  });
+
+  // Área sombreada entre max y min
+  const maxPts = days.map((d,i) => {
+    const day = byDay[d]; if(!day?.maxT.length) return null;
+    return [toX(i), toYt(day.maxT.reduce((a,b)=>a+b,0)/day.maxT.length)];
+  });
+  const minPts = days.map((d,i) => {
+    const day = byDay[d]; if(!day?.minT.length) return null;
+    return [toX(i), toYt(day.minT.reduce((a,b)=>a+b,0)/day.minT.length)];
+  });
+
+  const validMax = maxPts.filter(Boolean);
+  const validMin = minPts.filter(Boolean);
+  if (validMax.length > 1 && validMin.length > 1) {
+    const fwd = validMax.map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+    const bwd = [...validMin].reverse().map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+    s += `<polygon points="${fwd} ${bwd}" fill="rgba(63,185,80,0.07)"/>`;
+  }
+
+  // Líneas temperatura
+  const maxLine = validMax.map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const minLine = validMin.map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  if (maxLine) s += `<polyline points="${maxLine}" fill="none" stroke="#f85149" stroke-width="1.5" stroke-linejoin="round"/>`;
+  if (minLine) s += `<polyline points="${minLine}" fill="none" stroke="#58a6ff" stroke-width="1.5" stroke-linejoin="round"/>`;
+
+  // Etiquetas eje X (cada 7 días + último)
+  days.forEach((d,i) => {
+    if (i%7!==0 && i!==days.length-1) return;
+    s += `<text x="${toX(i).toFixed(1)}" y="${H-PB+12}" text-anchor="middle" fill="#484f58" font-size="8" font-family="system-ui">${d.slice(5)}</text>`;
+  });
+
+  // Eje derecho lluvia
+  [0, rMax/2, rMax].forEach(r => {
+    const y = toYr(r).toFixed(1);
+    s += `<text x="${W-PR+4}" y="${(+y+3).toFixed(1)}" fill="#3d7abf" font-size="8" font-family="system-ui">${r.toFixed(0)}mm</text>`;
+  });
+
+  // Leyenda
+  s += `<rect x="${PL}" y="8" width="14" height="3" fill="#f85149"/>
+    <text x="${PL+17}" y="14" fill="#f85149" font-size="9" font-family="system-ui">Temp máx</text>
+    <rect x="${PL+80}" y="8" width="14" height="3" fill="#58a6ff"/>
+    <text x="${PL+97}" y="14" fill="#58a6ff" font-size="9" font-family="system-ui">Temp mín</text>
+    <rect x="${PL+170}" y="6" width="10" height="8" fill="#58a6ff" opacity="0.45" rx="1"/>
+    <text x="${PL+183}" y="14" fill="#8b949e" font-size="9" font-family="system-ui">Lluvia (mm, eje der.)</text>`;
+
+  if (!allT.length && !allR.some(v=>v>0)) return emptyState("Sin datos climáticos en los últimos 60 días");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">${s}</svg>`;
+}
+
+// ============================================================
+// CHART: barras apiladas por semana (días laborales vs lluvia)
+// ============================================================
+function stackedWeekChart(workedSet, rainySet, year, month) {
+  // Generar días del mes
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const days = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${year}-${String(month).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    days.push(iso);
+  }
+
+  // Agrupar por semana (lunes-domingo)
+  const weeks = [];
+  let week = [];
+  days.forEach((d,i) => {
+    week.push(d);
+    const dow = new Date(d).getDay(); // 0=dom
+    if (dow === 0 || i === days.length-1) { weeks.push(week); week = []; }
+  });
+  if (week.length) weeks.push(week);
+
+  const BW=40, GAP=8, PAD=16, LH=16;
+  const maxH = 7;
+  const H = 80;
+  const W = PAD*2 + weeks.length*(BW+GAP);
+
+  let s = "";
+  weeks.forEach((wk, wi) => {
+    const x = PAD + wi*(BW+GAP);
+    let y = PAD;
+    const worked  = wk.filter(d => workedSet.has(d)).length;
+    const rainy   = wk.filter(d => !workedSet.has(d) && rainySet.has(d)).length;
+    const nodata  = wk.length - worked - rainy;
+    const scale   = (H-PAD*2-LH) / maxH;
+
+    // Sin dato (gris) — de abajo
+    const yBase = PAD + (H-PAD*2-LH);
+    let yOff = yBase;
+    if (nodata>0) {
+      const bh = nodata*scale;
+      yOff -= bh;
+      s += `<rect x="${x}" y="${yOff.toFixed(1)}" width="${BW}" height="${bh.toFixed(1)}" fill="#30363d" rx="2"/>`;
+    }
+    if (rainy>0) {
+      const bh = rainy*scale;
+      yOff -= bh;
+      s += `<rect x="${x}" y="${yOff.toFixed(1)}" width="${BW}" height="${bh.toFixed(1)}" fill="#1d4470" rx="2"/>`;
+    }
+    if (worked>0) {
+      const bh = worked*scale;
+      yOff -= bh;
+      s += `<rect x="${x}" y="${yOff.toFixed(1)}" width="${BW}" height="${bh.toFixed(1)}" fill="#1a4d1a" rx="2"/>`;
+    }
+    // Etiqueta semana
+    const label = wk[0].slice(5);
+    s += `<text x="${(x+BW/2).toFixed(1)}" y="${H-LH+10}" text-anchor="middle" fill="#484f58" font-size="8" font-family="system-ui">${label}</text>`;
+    // Conteo
+    s += `<text x="${(x+BW/2).toFixed(1)}" y="${(yOff-2).toFixed(1)}" text-anchor="middle" fill="#8b949e" font-size="7" font-family="system-ui">${worked}t·${rainy}l·${nodata}s</text>`;
+  });
+
+  // Leyenda
+  s += `<rect x="${PAD}" y="${H-8}" width="8" height="6" fill="#1a4d1a" rx="1"/>
+    <text x="${PAD+11}" y="${H-3}" fill="#8b949e" font-size="8" font-family="system-ui">Trabajado</text>
+    <rect x="${PAD+75}" y="${H-8}" width="8" height="6" fill="#1d4470" rx="1"/>
+    <text x="${PAD+86}" y="${H-3}" fill="#8b949e" font-size="8" font-family="system-ui">Lluvia</text>
+    <rect x="${PAD+130}" y="${H-8}" width="8" height="6" fill="#30363d" rx="1"/>
+    <text x="${PAD+141}" y="${H-3}" fill="#8b949e" font-size="8" font-family="system-ui">Sin dato</text>`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" width="${Math.min(W,500)}" height="${H}" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
 }
 
 // ============================================================
