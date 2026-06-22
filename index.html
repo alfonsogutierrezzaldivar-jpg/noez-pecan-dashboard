@@ -1026,7 +1026,7 @@ function mEsCeldaInvalida(col, fila) {
     const ci = M_COL_IDX[col] ?? -1;
     const jIdx = 9;
     if (fila <= 108) return ci < jIdx;           // A-I inválidas
-    if (fila === 109) return ci <= jIdx;         // A-J inválidas (J-109 = MONTE, manejado aparte)
+    if (fila === 109) return ci < jIdx;          // A-I inválidas (J-109 = MONTE, manejado aparte)
     if (fila <= 185) return false;               // A-X todas válidas
     if (fila === 186) return col==="A"||col==="B";
   }
