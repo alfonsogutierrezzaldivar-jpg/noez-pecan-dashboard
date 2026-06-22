@@ -931,11 +931,14 @@ const M_GAS = new Set([
   "A-135",
 ]);
 // Zona monte natural: columnas A-J, filas 101-109 (lote nuevo sin plantar)
-const M_MONTE = new Set(
-  ["A","B","C","D","E","F","G","H","I","J"].flatMap(col =>
+const M_MONTE = new Set([
+  // A-I para filas 101-109 (monte natural)
+  ...["A","B","C","D","E","F","G","H","I"].flatMap(col =>
     [...Array(9)].map((_,i) => `${col}-${101+i}`)
-  )
-);
+  ),
+  // J-109 también es monte (J-101 a J-108 son árboles plantados)
+  "J-109",
+]);
 
 const M_VAR_FILL = {pawnee:"#2d6a4f",desirable:"#52b788",sumner:"#74c69d",forkert:"#95d5b2"};
 const M_ACT_STROKE = {
@@ -969,20 +972,33 @@ const MONTE_LAYERS = [
   {id:"produccion",     label:"Producción (kg)"},
 ];
 
-// Rangos de columnas [desde, hasta] (índices en M_COLS) por fila
-// VERIFICAR: filas 62-75 del lote viejo — ajustar según el mapa real del Excel
+// Máxima fila válida por columna en lote viejo
+const M_MAX_FILA_VIEJO = {
+  A:61,B:61,C:62,D:62,E:63,F:63,G:64,H:64,
+  I:65,J:65,K:65,L:66,M:67,N:68,"Ñ":68,
+  O:70,P:70,Q:74,R:74,S:75,T:75,U:75,V:75,W:75,X:75
+};
+
+// Devuelve true si la celda NO tiene árbol (ni gas ni monte — solo fuera de rango)
+function mEsCeldaInvalida(col, fila) {
+  if (fila >= 1 && fila <= 75) {
+    const max = M_MAX_FILA_VIEJO[col];
+    return max == null || fila > max;
+  }
+  if (fila >= 101 && fila <= 186) {
+    const ci = M_COL_IDX[col] ?? -1;
+    const jIdx = 9;
+    if (fila <= 108) return ci < jIdx;           // A-I inválidas
+    if (fila === 109) return ci <= jIdx;         // A-J inválidas (J-109 = MONTE, manejado aparte)
+    if (fila <= 185) return false;               // A-X todas válidas
+    if (fila === 186) return col==="A"||col==="B";
+  }
+  return true;
+}
+
 function mColRange(fila) {
-  if (fila >= 110 && fila <= 186) return [0, 24];   // A-X completo
-  if (fila >= 101 && fila <= 109) return [0, 24];   // K-X plantas + A-J monte (manejado por M_MONTE)
-  if (fila >= 1   && fila <= 61)  return [0, 24];   // A-X completo
-  if (fila === 62) return [2,  24]; // C-X — VERIFICAR
-  if (fila === 63) return [4,  24]; // E-X — VERIFICAR
-  if (fila === 64) return [6,  24]; // G-X — VERIFICAR
-  if (fila === 65) return [8,  24]; // I-X — VERIFICAR
-  if (fila === 66) return [11, 24]; // L-X — VERIFICAR
-  if (fila === 67) return [12, 24]; // M-X — VERIFICAR
-  if (fila >= 68  && fila <= 70)  return [15, 24];  // O-X — VERIFICAR
-  if (fila >= 71  && fila <= 75)  return [17, 24];  // Q-X — VERIFICAR
+  if (fila >= 1   && fila <= 75)  return [0, 24];
+  if (fila >= 101 && fila <= 186) return [0, 24];
   return null;
 }
 
@@ -1185,6 +1201,11 @@ function renderMonteMap() {
         const x   = (M_ROW_W + (24 - ci) * M_STEP).toFixed(1);
         const yf  = y.toFixed(1);
 
+        if (mEsCeldaInvalida(col, fila)) {
+          // Celda fuera del rango del campo — transparente, no clickeable
+          s += `<rect x="${x}" y="${yf}" width="${M_CS}" height="${M_CS}" fill="none" stroke="none" pointer-events="none"/>`;
+          continue;
+        }
         if (M_GAS.has(id)) {
           s += `<rect x="${x}" y="${yf}" width="${M_CS}" height="${M_CS}" fill="#1c2128" stroke="#30363d" stroke-width="0.4" rx="0.5" data-id="${id}" data-type="gas"/>`;
           continue;
