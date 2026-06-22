@@ -36,6 +36,22 @@ nav{flex:1;padding:10px 8px;overflow-y:auto}
 #refresh-btn{width:100%;background:var(--green);color:#000;border:none;border-radius:var(--radius);padding:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
 #refresh-btn:hover{opacity:.85}
 #refresh-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999}
+#login-screen.hidden{display:none}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:40px 36px;width:340px;text-align:center}
+.login-logo{width:52px;height:52px;background:linear-gradient(135deg,#1a3d0a,#2d6a17);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.login-box h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.login-box p{font-size:12px;color:var(--text2);margin-bottom:28px}
+.login-box input{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-size:14px;outline:none;margin-bottom:12px}
+.login-box input:focus{border-color:var(--green)}
+.login-box button{width:100%;background:var(--green);color:#000;border:none;border-radius:var(--radius);padding:10px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.login-box button:hover{opacity:.85}
+#login-error{color:var(--red);font-size:12px;margin-top:8px;min-height:16px}
+/* Botón cerrar sesión */
+#logout-btn{width:100%;background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:var(--radius);padding:7px;font-size:12px;cursor:pointer;margin-top:8px;transition:color .15s,border-color .15s}
+#logout-btn:hover{color:var(--red);border-color:var(--red)}
 .spin{display:inline-block}
 .spinning{animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -206,8 +222,23 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
     <button id="refresh-btn" onclick="refreshCurrent()">
       <span class="spin" id="spin-icon">↻</span> Actualizar
     </button>
+    <button id="logout-btn" onclick="cerrarSesion()">Cerrar sesión</button>
   </div>
 </aside>
+
+<!-- PANTALLA DE LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3fb950" stroke-width="2"><path d="M12 2a9 9 0 0 1 9 9c0 4.97-9 13-9 13S3 15.97 3 11a9 9 0 0 1 9-9z"/><circle cx="12" cy="11" r="3"/></svg>
+    </div>
+    <h1>Las 40 · Nuez Pecan</h1>
+    <p>Sistema de gestión de campo</p>
+    <input type="password" id="login-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')intentarLogin()"/>
+    <button onclick="intentarLogin()">Entrar</button>
+    <div id="login-error"></div>
+  </div>
+</div>
 
 <!-- MAIN -->
 <main id="main">
@@ -393,6 +424,42 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
 </div>
 
 <script>
+// ============================================================
+// AUTH
+// ============================================================
+const LOGIN_KEY = "las40_auth";
+const LOGIN_PWD = "montepecan";
+
+function checkAuth(){
+  if(sessionStorage.getItem(LOGIN_KEY) === "1"){
+    document.getElementById("login-screen").classList.add("hidden");
+  }
+  // Si no hay sesión, la pantalla de login ya es visible por defecto
+}
+
+function intentarLogin(){
+  const val = document.getElementById("login-pass").value;
+  if(val === LOGIN_PWD){
+    sessionStorage.setItem(LOGIN_KEY, "1");
+    document.getElementById("login-screen").classList.add("hidden");
+    document.getElementById("login-error").textContent = "";
+  } else {
+    document.getElementById("login-error").textContent = "Contraseña incorrecta";
+    document.getElementById("login-pass").value = "";
+    document.getElementById("login-pass").focus();
+  }
+}
+
+function cerrarSesion(){
+  sessionStorage.removeItem(LOGIN_KEY);
+  document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("login-pass").value = "";
+  document.getElementById("login-error").textContent = "";
+}
+
+// Verificar al cargar
+checkAuth();
+
 // ============================================================
 // Config
 // ============================================================
