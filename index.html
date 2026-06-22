@@ -222,6 +222,8 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
     <button id="refresh-btn" onclick="refreshCurrent()">
       <span class="spin" id="spin-icon">↻</span> Actualizar
     </button>
+    <div id="admin-badge" style="display:none;background:var(--red-dim);border:1px solid var(--red);border-radius:var(--radius);padding:5px 8px;font-size:11px;color:var(--red);font-weight:600;text-align:center;margin-top:8px">MODO ADMIN ACTIVO</div>
+    <button id="admin-btn" onclick="toggleAdmin()" style="width:100%;background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:var(--radius);padding:7px;font-size:12px;cursor:pointer;margin-top:6px;transition:color .15s,border-color .15s">Modo admin</button>
     <button id="logout-btn" onclick="cerrarSesion()">Cerrar sesión</button>
   </div>
 </aside>
@@ -427,8 +429,10 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
 // ============================================================
 // AUTH
 // ============================================================
-const LOGIN_KEY = "las40_auth";
-const LOGIN_PWD = "montepecan";
+const LOGIN_KEY  = "las40_auth";
+const ADMIN_KEY  = "las40_admin";
+const LOGIN_PWD  = "montepecan";
+const ADMIN_PWD  = "capitansarmiento";
 
 function checkAuth(){
   if(sessionStorage.getItem(LOGIN_KEY) === "1"){
@@ -452,9 +456,44 @@ function intentarLogin(){
 
 function cerrarSesion(){
   sessionStorage.removeItem(LOGIN_KEY);
+  sessionStorage.removeItem(ADMIN_KEY);
   document.getElementById("login-screen").classList.remove("hidden");
   document.getElementById("login-pass").value = "";
   document.getElementById("login-error").textContent = "";
+  actualizarModoAdmin();
+}
+
+function isAdmin(){ return sessionStorage.getItem(ADMIN_KEY) === "1"; }
+
+function toggleAdmin(){
+  if(isAdmin()){
+    sessionStorage.removeItem(ADMIN_KEY);
+    actualizarModoAdmin();
+    return;
+  }
+  const pwd = prompt("Contraseña de administrador:");
+  if(pwd === ADMIN_PWD){
+    sessionStorage.setItem(ADMIN_KEY, "1");
+    actualizarModoAdmin();
+  } else if(pwd !== null){
+    alert("Contraseña incorrecta");
+  }
+}
+
+function actualizarModoAdmin(){
+  const badge = document.getElementById("admin-badge");
+  const btn   = document.getElementById("admin-btn");
+  if(isAdmin()){
+    badge.style.display = "";
+    btn.textContent = "Salir de modo admin";
+    btn.style.color = "var(--red)";
+    btn.style.borderColor = "var(--red)";
+  } else {
+    badge.style.display = "none";
+    btn.textContent = "Modo admin";
+    btn.style.color = "";
+    btn.style.borderColor = "";
+  }
 }
 
 // Verificar al cargar
