@@ -1571,45 +1571,53 @@ function tempAndRainChart(dias, maxArr, minArr, byDay){
 
   const tempMin=Math.min(...vals,-10), tempMax=Math.max(...vals,30);
   const rainMax=Math.max(...rainVals,1);
-  const PAD=40, W=800, H=160;
+  const PAD=50, W=1000, H=280;
   const gW=W-2*PAD, gH=H-2*PAD;
 
   let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Cuadrícula horizontal
+  for(let i=0;i<=4;i++){
+    const y=(PAD+i*(gH/4)).toFixed(1);
+    s+=`<line x1="${PAD}" y1="${y}" x2="${(W-PAD).toFixed(1)}" y2="${y}" stroke="var(--border)" stroke-width="0.5" opacity="0.5"/>`;
+    const tempVal=(tempMax-(tempMax-tempMin)*(i/4)).toFixed(0);
+    s+=`<text x="15" y="${(+y+4).toFixed(1)}" font-size="10" fill="var(--text3)">${tempVal}°</text>`;
+  }
 
   // Barras lluvia (fondo)
   dias.forEach((day,i)=>{
     const x=PAD+(i/(dias.length-1||1))*gW;
     const rain=byDay[day]||0;
-    const y=H-PAD-(rain/rainMax)*gH*0.8;
-    const bw=gW/(dias.length*1.5);
-    s+=`<rect x="${(x-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-PAD-y).toFixed(1)}" fill="rgba(88,166,255,.2)" rx="2"/>`;
+    const y=H-PAD-(rain/rainMax)*gH*0.7;
+    const bw=Math.max(2,gW/(dias.length*3));
+    s+=`<rect x="${(x-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-PAD-y).toFixed(1)}" fill="rgba(88,166,255,.25)" rx="1"/>`;
   });
 
   // Línea máx (rojo)
   let pathMax=`M${(PAD+(0/(dias.length-1||1))*gW).toFixed(1)} ${(H-PAD-((maxArr[0]??tempMin-tempMin)/(tempMax-tempMin))*gH).toFixed(1)}`;
   maxArr.forEach((v,i)=>{ const x=PAD+(i/(dias.length-1||1))*gW; const y=H-PAD-((v??tempMin-tempMin)/(tempMax-tempMin))*gH; pathMax+=`L${x.toFixed(1)} ${y.toFixed(1)}`; });
-  s+=`<path d="${pathMax}" stroke="var(--red)" stroke-width="2" fill="none"/>`;
+  s+=`<path d="${pathMax}" stroke="var(--red)" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
 
   // Línea mín (azul)
   let pathMin=`M${(PAD+(0/(dias.length-1||1))*gW).toFixed(1)} ${(H-PAD-((minArr[0]??tempMin-tempMin)/(tempMax-tempMin))*gH).toFixed(1)}`;
   minArr.forEach((v,i)=>{ const x=PAD+(i/(dias.length-1||1))*gW; const y=H-PAD-((v??tempMin-tempMin)/(tempMax-tempMin))*gH; pathMin+=`L${x.toFixed(1)} ${y.toFixed(1)}`; });
-  s+=`<path d="${pathMin}" stroke="var(--blue)" stroke-width="2" fill="none"/>`;
+  s+=`<path d="${pathMin}" stroke="var(--blue)" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
 
-  // Eje Y temp (izquierda)
-  s+=`<line x1="${PAD}" y1="${PAD}" x2="${PAD}" y2="${H-PAD}" stroke="var(--border)" stroke-width="1"/>`;
-  s+=`<text x="10" y="25" font-size="11" fill="var(--text3)">°C</text>`;
-  s+=`<text x="10" y="${(H-PAD+12).toFixed(1)}" font-size="11" fill="var(--text3)">${tempMin.toFixed(0)}°</text>`;
+  // Marco
+  s+=`<line x1="${PAD}" y1="${PAD}" x2="${PAD}" y2="${(H-PAD).toFixed(1)}" stroke="var(--border)" stroke-width="1.5"/>`;
+  s+=`<line x1="${PAD}" y1="${(H-PAD).toFixed(1)}" x2="${(W-PAD).toFixed(1)}" y2="${(H-PAD).toFixed(1)}" stroke="var(--border)" stroke-width="1.5"/>`;
 
-  // Eje X (fechas)
-  [0,Math.floor(dias.length/2),dias.length-1].forEach(i=>{
+  // Eje X (fechas cada 5 días)
+  const step=Math.ceil(dias.length/6);
+  for(let i=0;i<dias.length;i+=step){
     const x=PAD+(i/(dias.length-1||1))*gW;
-    s+=`<text x="${x.toFixed(1)}" y="${(H-PAD+16).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--text3)">${dias[i]}</text>`;
-  });
+    s+=`<text x="${x.toFixed(1)}" y="${(H-PAD+18).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--text3)">${dias[i]}</text>`;
+  }
 
   // Leyenda
-  s+=`<circle cx="${(W-120)}" cy="15" r="3" fill="var(--red)"/><text x="${(W-110)}" y="19" font-size="11" fill="var(--text3)">Máx</text>`;
-  s+=`<circle cx="${(W-50)}" cy="15" r="3" fill="var(--blue)"/><text x="${(W-40)}" y="19" font-size="11" fill="var(--text3)">Mín</text>`;
-  s+=`<rect x="${(W-210)}" y="8" width="12" height="12" fill="rgba(88,166,255,.2)"/><text x="${(W-195)}" y="19" font-size="11" fill="var(--text3)">Lluvia</text>`;
+  s+=`<circle cx="80" cy="20" r="4" fill="var(--red)"/><text x="92" y="25" font-size="12" fill="var(--text3)">Máx</text>`;
+  s+=`<circle cx="160" cy="20" r="4" fill="var(--blue)"/><text x="172" y="25" font-size="12" fill="var(--text3)">Mín</text>`;
+  s+=`<rect x="260" y="12" width="14" height="14" fill="rgba(88,166,255,.25)"/><text x="280" y="25" font-size="12" fill="var(--text3)">Lluvia</text>`;
 
   s+=`</svg>`;
   return s;
