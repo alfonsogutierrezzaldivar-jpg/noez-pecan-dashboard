@@ -1576,12 +1576,15 @@ function tempAndRainChart(dias, maxArr, minArr, byDay){
 
   let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
 
-  // Cuadrícula horizontal
+  // Cuadrícula horizontal con escala de temperatura
   for(let i=0;i<=4;i++){
     const y=(PAD+i*(gH/4)).toFixed(1);
     s+=`<line x1="${PAD}" y1="${y}" x2="${(W-PAD).toFixed(1)}" y2="${y}" stroke="var(--border)" stroke-width="0.5" opacity="0.5"/>`;
     const tempVal=(tempMax-(tempMax-tempMin)*(i/4)).toFixed(0);
-    s+=`<text x="15" y="${(+y+4).toFixed(1)}" font-size="10" fill="var(--text3)">${tempVal}°</text>`;
+    s+=`<text x="5" y="${(+y+5).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--text2)">${tempVal}°</text>`;
+    // Escala lluvia (derecha)
+    const rainVal=((rainMax)*(i/4)).toFixed(0);
+    s+=`<text x="${(W-10).toFixed(1)}" y="${(+y+5).toFixed(1)}" text-anchor="start" font-size="9" fill="var(--text2)">${rainVal}mm</text>`;
   }
 
   // Barras lluvia (fondo)
