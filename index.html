@@ -325,13 +325,9 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
       </div>
       <div id="chart-semanas"><div class="sk" style="height:80px"></div></div>
     </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-title" id="title-temp">Temperatura máx/mín — últimos 30 días</div>
-      <div id="chart-temp"><div class="sk" style="height:140px"></div></div>
-    </div>
     <div class="card">
-      <div class="card-title" id="title-lluvia">Lluvia (mm) — últimos 30 días</div>
-      <div id="chart-lluvia"><div class="sk" style="height:100px"></div></div>
+      <div class="card-title">Temperatura y lluvia — últimos 30 días</div>
+      <div id="chart-temp-lluvia"><div class="sk" style="height:160px"></div></div>
     </div>
   </div>
 
@@ -756,8 +752,7 @@ async function renderClima(dias){
   if(elTL) elTL.textContent = `Lluvia (mm) — ${titleSuffix}`;
 
   // Skeleton while fetching
-  document.getElementById("chart-temp").innerHTML  = '<div class="sk" style="height:140px"></div>';
-  document.getElementById("chart-lluvia").innerHTML = '<div class="sk" style="height:100px"></div>';
+  document.getElementById("chart-temp-lluvia").innerHTML = '<div class="sk" style="height:160px"></div>';
 
   // Fetch periodo seleccionado + mes actual en paralelo
   const hoyD = new Date();
@@ -822,23 +817,18 @@ async function renderClima(dias){
   const elSW = document.getElementById("chart-semanas");
   if (elSW) elSW.innerHTML = stackedWeekChart(workedSet, rainySet, hoyD.getFullYear(), hoyD.getMonth()+1);
 
-  // Gráfico temperatura
+  // Gráfico temperatura + lluvia combinado
   const tempDias=Object.keys(tempData).sort();
-  if(tempDias.length){
-    const maxArr=tempDias.map(day=>{ const v=tempData[day].max; return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):null; });
-    const minArr=tempDias.map(day=>{ const v=tempData[day].min; return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):null; });
-    document.getElementById("chart-temp").innerHTML = dualLineChart(tempDias,maxArr,minArr);
-  } else {
-    document.getElementById("chart-temp").innerHTML = emptyState("Sin datos de temperatura");
-  }
-
-  // Gráfico lluvia
   const lluviaDias=Object.keys(lluviaData).sort();
-  if(lluviaDias.length){
-    const byDay={}; lluviaDias.forEach(day=>{ byDay[day]=+lluviaData[day].toFixed(1); });
-    document.getElementById("chart-lluvia").innerHTML = barChartDays(byDay,"mm","var(--blue)",80);
+  const allDias=[...new Set([...tempDias,...lluviaDias])].sort();
+
+  if(allDias.length){
+    const maxArr=allDias.map(day=>{ const v=tempData[day]?.max; return v?.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):null; });
+    const minArr=allDias.map(day=>{ const v=tempData[day]?.min; return v?.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):null; });
+    const byDay={}; allDias.forEach(day=>{ byDay[day]=+(lluviaData[day]??0).toFixed(1); });
+    document.getElementById("chart-temp-lluvia").innerHTML = tempAndRainChart(allDias,maxArr,minArr,byDay);
   } else {
-    document.getElementById("chart-lluvia").innerHTML = emptyState("Sin datos de lluvia");
+    document.getElementById("chart-temp-lluvia").innerHTML = emptyState("Sin datos de clima");
   }
 }
 
@@ -1569,6 +1559,60 @@ function lineChart(byDay, label, days=30, color="var(--green)"){
     <polygon points="${area}" fill="${color}" opacity=".1"/>
     <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>
   </svg>`;
+}
+
+// ============================================================
+// CHART: temperatura + lluvia combinado
+// ============================================================
+function tempAndRainChart(dias, maxArr, minArr, byDay){
+  const vals=[...maxArr,...minArr].filter(v=>v!=null).map(Number);
+  const rainVals=Object.values(byDay).filter(v=>v);
+  if(!vals.length&&!rainVals.length) return emptyState("Sin datos de clima");
+
+  const tempMin=Math.min(...vals,-10), tempMax=Math.max(...vals,30);
+  const rainMax=Math.max(...rainVals,1);
+  const PAD=40, W=800, H=160;
+  const gW=W-2*PAD, gH=H-2*PAD;
+
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Barras lluvia (fondo)
+  dias.forEach((day,i)=>{
+    const x=PAD+(i/(dias.length-1||1))*gW;
+    const rain=byDay[day]||0;
+    const y=H-PAD-(rain/rainMax)*gH*0.8;
+    const bw=gW/(dias.length*1.5);
+    s+=`<rect x="${(x-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-PAD-y).toFixed(1)}" fill="rgba(88,166,255,.2)" rx="2"/>`;
+  });
+
+  // Línea máx (rojo)
+  let pathMax=`M${(PAD+(0/(dias.length-1||1))*gW).toFixed(1)} ${(H-PAD-((maxArr[0]??tempMin-tempMin)/(tempMax-tempMin))*gH).toFixed(1)}`;
+  maxArr.forEach((v,i)=>{ const x=PAD+(i/(dias.length-1||1))*gW; const y=H-PAD-((v??tempMin-tempMin)/(tempMax-tempMin))*gH; pathMax+=`L${x.toFixed(1)} ${y.toFixed(1)}`; });
+  s+=`<path d="${pathMax}" stroke="var(--red)" stroke-width="2" fill="none"/>`;
+
+  // Línea mín (azul)
+  let pathMin=`M${(PAD+(0/(dias.length-1||1))*gW).toFixed(1)} ${(H-PAD-((minArr[0]??tempMin-tempMin)/(tempMax-tempMin))*gH).toFixed(1)}`;
+  minArr.forEach((v,i)=>{ const x=PAD+(i/(dias.length-1||1))*gW; const y=H-PAD-((v??tempMin-tempMin)/(tempMax-tempMin))*gH; pathMin+=`L${x.toFixed(1)} ${y.toFixed(1)}`; });
+  s+=`<path d="${pathMin}" stroke="var(--blue)" stroke-width="2" fill="none"/>`;
+
+  // Eje Y temp (izquierda)
+  s+=`<line x1="${PAD}" y1="${PAD}" x2="${PAD}" y2="${H-PAD}" stroke="var(--border)" stroke-width="1"/>`;
+  s+=`<text x="10" y="25" font-size="11" fill="var(--text3)">°C</text>`;
+  s+=`<text x="10" y="${(H-PAD+12).toFixed(1)}" font-size="11" fill="var(--text3)">${tempMin.toFixed(0)}°</text>`;
+
+  // Eje X (fechas)
+  [0,Math.floor(dias.length/2),dias.length-1].forEach(i=>{
+    const x=PAD+(i/(dias.length-1||1))*gW;
+    s+=`<text x="${x.toFixed(1)}" y="${(H-PAD+16).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--text3)">${dias[i]}</text>`;
+  });
+
+  // Leyenda
+  s+=`<circle cx="${(W-120)}" cy="15" r="3" fill="var(--red)"/><text x="${(W-110)}" y="19" font-size="11" fill="var(--text3)">Máx</text>`;
+  s+=`<circle cx="${(W-50)}" cy="15" r="3" fill="var(--blue)"/><text x="${(W-40)}" y="19" font-size="11" fill="var(--text3)">Mín</text>`;
+  s+=`<rect x="${(W-210)}" y="8" width="12" height="12" fill="rgba(88,166,255,.2)"/><text x="${(W-195)}" y="19" font-size="11" fill="var(--text3)">Lluvia</text>`;
+
+  s+=`</svg>`;
+  return s;
 }
 
 // ============================================================
