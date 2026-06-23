@@ -407,14 +407,18 @@ select{background:var(--card2);color:var(--text);border:1px solid var(--border);
 
   <!-- TAB: ALERTAS -->
   <div id="tab-alertas" class="tab-panel">
-    <div class="page-header"><h1>Alertas</h1><p>Mensajes no procesados y registros sin clasificar</p></div>
+    <div class="page-header"><h1>Alertas</h1><p>Mensajes, registros sin clasificar y jobs fallidos</p></div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Message log</div>
+      <div class="card-title">Todos los mensajes recibidos</div>
       <div id="msg-log"></div>
     </div>
-    <div class="card">
+    <div class="card" style="margin-bottom:16px">
       <div class="card-title">Registros sin clasificar</div>
       <div class="tbl-wrap" id="tbl-nc"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Jobs fallidos (requieren reintento)</div>
+      <div class="tbl-wrap" id="tbl-failed-jobs"></div>
     </div>
   </div>
 
@@ -1381,9 +1385,10 @@ function closeTreePanel() {
 // ALERTAS
 // ============================================================
 async function loadAlertas(){
-  const [log, nc] = await Promise.all([
-    sb("message_log",{select:"whatsapp_message_id,tipo_mensaje,timestamp,created_at",order:"created_at.desc",limit:"20"}).catch(()=>[]),
-    sb("registros_trabajo",{select:"created_at,actividad,campos",clasificado:"eq.false",order:"created_at.desc",limit:"100"}),
+  const [log, nc, failedJobs] = await Promise.all([
+    sb("message_log",{select:"whatsapp_message_id,tipo_mensaje,timestamp,created_at",order:"created_at.desc"}).catch(()=>[]),
+    sb("registros_trabajo",{select:"created_at,actividad,campos",clasificado:"eq.false",order:"created_at.desc"}).catch(()=>[]),
+    sb("webhook_jobs",{select:"id,status,retry_count,last_error,created_at",status:"eq.failed",order:"created_at.desc"}).catch(()=>[]),
   ]);
 
   document.getElementById("msg-log").innerHTML = log.length
@@ -1397,6 +1402,18 @@ async function loadAlertas(){
   document.getElementById("tbl-nc").innerHTML = nc.length
     ? tablaRegistros(nc)
     : emptyState("Sin registros sin clasificar");
+
+  // Tabla de jobs fallidos
+  const headFailed = `<thead><tr><th>ID Job</th><th>Reintentos</th><th>Último error</th><th>Creado</th></tr></thead>`;
+  const bodyFailed = failedJobs.map(j=>`<tr>
+    <td style="font-family:monospace;font-size:11px">${esc(j.id?.slice(0,8)+"...")}</td>
+    <td>${j.retry_count ?? 0}</td>
+    <td style="max-width:300px;word-break:break-word;font-size:12px">${esc(j.last_error??"—")}</td>
+    <td>${fmtDT(j.created_at)}</td>
+  </tr>`).join("");
+  document.getElementById("tbl-failed-jobs").innerHTML = failedJobs.length
+    ? `<table>${headFailed}<tbody>${bodyFailed}</tbody></table>`
+    : emptyState("Sin jobs fallidos");
 }
 
 // ============================================================
